@@ -74,6 +74,8 @@ public:
     std::size_t inline count(const T& element) const
         {return position_map_.count(element);}
     std::optional<std::pair<T,double> > sample() const;
+    std::optional<std::pair<T,double> > sample_ext(double r1, double r2,
+            double r3) const;
     double total_weight() const {return sampling_tree_.get_value();}
     std::optional<double> get_weight(const T& element) const;
 
@@ -156,6 +158,47 @@ std::optional<std::pair<T,double> > SamplableSetCR<T>::sample() const
                             group_index)))
             {
                 element_not_chosen = false;
+            }
+        }
+        return propensity_group_vector_.at(group_index).at(in_group_index);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+//sample an element according to its weight by using external random numbers
+template <typename T>
+std::optional<std::pair<T,double> > SamplableSetCR<T>::sample_ext(double r1,
+        double r2, double r3) const
+{
+    if (sampling_tree_.get_value() > 0)
+    {
+        GroupIndex group_index = sampling_tree_.get_leaf_index(r1);
+        bool element_not_chosen = true;
+        InGroupIndex in_group_index;
+        double ratio;
+        while (element_not_chosen)
+        {
+            in_group_index = floor(r2*propensity_group_vector_.at(
+                        group_index).size());
+            //recycle random number
+            r2 = r2*propensity_group_vector_.at(group_index).size()
+                - in_group_index;
+
+            ratio = propensity_group_vector_.at(group_index).at(
+                        in_group_index).second/(max_propensity_vector_.at(
+                            group_index));
+
+            if (r3 < ratio)
+            {
+                element_not_chosen = false;
+            }
+            else
+            {
+                //recycle random number
+                r3 = (1-r3)/(1-ratio);
             }
         }
         return propensity_group_vector_.at(group_index).at(in_group_index);

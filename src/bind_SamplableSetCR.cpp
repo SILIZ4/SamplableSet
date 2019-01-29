@@ -83,6 +83,16 @@ PYBIND11_MODULE(_SamplableSetCR, m)
             its weight as a tuple.
             )pbdoc")
 
+        .def("sample_ext", &SamplableSetCR<Edge>::sample_ext, R"pbdoc(
+            Returns an element of the set randomly (according to weights) and
+            its weight as a tuple, using externally generated random numbers.
+
+            Args:
+               r1: random number in [0,1[
+               r2: random number in [0,1[
+               r3: random number in [0,1[
+            )pbdoc", py::arg("r1"), py::arg("r2"), py::arg("r3"))
+
         .def("get_weight", &SamplableSetCR<Edge>::get_weight, R"pbdoc(
             Returns the weight of an element in the set.
             )pbdoc")
